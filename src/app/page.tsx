@@ -1,69 +1,146 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+
+type EmergencyService = {
+  title: string;
+  description: string;
+  icon: string;
+};
+type EmergencyRequest = {
+  studentName: string;
+  category: string;
+  description: string;
+};
+
+const emergencyServices: EmergencyService[] = [
+  {
+    title: "campus security",
+    description: "for campus saftey",
+    icon: "campus",
+  },
+
+  {
+    title: "medical assistance",
+    description: "for medical concerns and supports.",
+    icon: "mediass",
+  },
+  {
+    title: "hostel warden",
+    description: "for hostel saftey",
+    icon: "hostel",
+  },
+];
 
 export default function Home() {
+  const [studentName, setStudentName] = useState("");
+  const [category, setCategory] = useState("Medical");
+  const [description, setDescription] = useState("");
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <Link href="/" className="text-xl font-bold">
+            Campus<span className="text-blue-700">Shield</span>
+          </Link>
+
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+            Simulation Demo
+          </span>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <section className="mt-12 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-bold">Request Emergency Assistance</h2>
+
+          <p className="mt-2 text-slate-600">
+            Submit your details to request campus support.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+          <form className="mt-6 space-y-5">
+            <div>
+              <label className="mb-2 block font-medium">Student Name</label>
+
+              <input
+                type="text"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block font-medium">
+                Emergency Category
+              </label>
+
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
+              >
+                <option value="Medical">Medical Assistance</option>
+                <option value="Security">Campus Security</option>
+                <option value="Hostel">Hostel Assistance</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block font-medium">
+                Describe Your Emergency
+              </label>
+
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Explain what assistance you need..."
+                rows={4}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
+              />
+            </div>
+            <button
+              type="button"
+              className="w-full rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white transition hover:bg-blue-800"
+            >
+              Submit Assistance Request
+            </button>
+          </form>
+        </section>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Campus Emergency Assistance
+        </h1>
+
+        <p className="mt-2 text-slate-600">
+          Find campus support options in one place.
+        </p>
+
+        <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {emergencyServices.map((service) => (
+            <article
+              key={service.title}
+              className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <h2 className="text-xl font-semibold">{service.title}</h2>
+
+              <p className="mt-3 leading-6 text-slate-600">
+                {service.description}
+              </p>
+            </article>
+          ))}
+        </section>
+
+        <aside className="mt-10 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <h2 className="font-semibold text-amber-900">
+            Simulation-only notice
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-amber-800">
+            This student project does not contact real emergency services and
+            cannot guarantee a response. Verify official contact details before
+            any real-world deployment.
+          </p>
+        </aside>
+      </div>
+    </main>
   );
 }
