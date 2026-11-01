@@ -36,6 +36,25 @@ export default function Home() {
   const [studentName, setStudentName] = useState("");
   const [category, setCategory] = useState("Medical");
   const [description, setDescription] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    //e = event so any cahnge in evnt will trigger it e container information about the event that occurred
+    e.preventDefault(); //prevents the browser form refreshing the page //so normal in html if somnone submit what avascript do it refresh the page to naviagte to  oher page but here in react we set our own rule thta after submissionw hat will ahppen so we prevent the default behavior of the form submission which is to refresh the page and navigate to another page
+    const newRequest: EmergencyRequest = {
+      //so we create a const then we made the stucture which taht cosnst have to foloow which emergency request
+      //here its creates an object using the emergency request type and the values from the form fields
+      studentName,
+      category,
+      description,
+    };
+    console.log("Emergency Request Submitted:", newRequest);
+    setSuccessMessage(
+      "Your assistance request has been submitted successfully.",
+    );
+    setStudentName(""); //here resets all thing which in the form so it become new
+    setCategory("Medical");
+    setDescription("");
+  };
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -58,12 +77,14 @@ export default function Home() {
             Submit your details to request campus support.
           </p>
 
-          <form className="mt-6 space-y-5">
+          {/* form */}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div>
               <label className="mb-2 block font-medium">Student Name</label>
 
               <input
                 type="text"
+                required
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
                 placeholder="Enter your full name"
@@ -92,6 +113,7 @@ export default function Home() {
 
               <textarea
                 value={description}
+                required
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Explain what assistance you need..."
                 rows={4}
@@ -99,13 +121,21 @@ export default function Home() {
               />
             </div>
             <button
-              type="button"
+              type="submit"
               className="w-full rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white transition hover:bg-blue-800"
             >
               Submit Assistance Request
             </button>
           </form>
+          {successMessage && (
+            <p className="mt-4 rounded-lg bg-orange-50 p-3 text-blue-700">
+              {successMessage}
+            </p>
+          )}
         </section>
+
+        {/* form end */}
+
         <h1 className="text-3xl font-bold tracking-tight">
           Campus Emergency Assistance
         </h1>
