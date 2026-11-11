@@ -37,6 +37,9 @@ export default function Home() {
   const [category, setCategory] = useState("Medical");
   const [description, setDescription] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  // list to store all submitted requests so they show on screen
+  const [requestsList, setRequestsList] = useState<EmergencyRequest[]>([]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     //e = event so any cahnge in evnt will trigger it e container information about the event that occurred
     e.preventDefault(); //prevents the browser form refreshing the page //so normal in html if somnone submit what avascript do it refresh the page to naviagte to  oher page but here in react we set our own rule thta after submissionw hat will ahppen so we prevent the default behavior of the form submission which is to refresh the page and navigate to another page
@@ -51,6 +54,27 @@ export default function Home() {
     setSuccessMessage(
       "Your assistance request has been submitted successfully.",
     );
+
+    // add to our submitted requests list so student can see it below
+    setRequestsList((prev) => [newRequest, ...prev]);
+
+    // send request to backend express server on port 5000
+    fetch("http://localhost:5000/api/requests", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newRequest),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Saved to backend successfully:", data);
+      })
+      .catch((err) => {
+        // if backend is not running, request is still preserved in frontend state
+        console.log("Backend offline or connection error:", err);
+      });
+
     setStudentName(""); //here resets all thing which in the form so it become new
     setCategory("Medical");
     setDescription("");
@@ -135,6 +159,46 @@ export default function Home() {
         </section>
 
         {/* form end */}
+
+        {/* submitted requests section so student can see their submitted requests */}
+        <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-bold">Recent Submitted Requests</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Emergency requests submitted during this session.
+          </p>
+
+          {requestsList.length === 0 ? (
+            <p className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+              No emergency requests submitted yet. Fill the form above to submit an assistance request.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {requestsList.map((req, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900">
+                        {req.studentName}
+                      </span>
+                      <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+                        {req.category}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {req.description}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 self-start sm:self-auto">
+                    Status: Pending Response
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <h1 className="text-3xl font-bold tracking-tight">
           Campus Emergency Assistance
