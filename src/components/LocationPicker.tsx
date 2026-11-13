@@ -4,6 +4,7 @@ import {
   FLOOR_OPTIONS,
   LANDMARK_MAX_LENGTH,
   ZONE_GROUPS,
+  cleanLocation,
   formatLocation,
   type LocationData,
 } from "@/lib/campusLocations";
@@ -105,8 +106,11 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800"
       >
         {value.zone
-          ? `📍 Responders will be told: ${formatLocation(value)}`
-          : "Select your building so responders know where to come."}
+          ? `📍 Location sent with your request: ${formatLocation(cleanLocation(value))}`
+          : "Select your building so your location can be sent with the request."}
+      </p>
+      <p className="text-[11px] text-slate-500">
+        Simulation only. No real emergency response is dispatched from this app.
       </p>
     </div>
   );
