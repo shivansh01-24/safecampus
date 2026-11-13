@@ -31,12 +31,38 @@ export default function SecurityPage() {
   const [requests, setRequests] = useState<EmergencyRequestItem[]>([]);
   const [filter, setFilter] = useState<"ALL" | "Pending" | "Dispatched" | "Resolved">("Pending");
   const [newAlertBanner, setNewAlertBanner] = useState<{ id: string; studentName: string; location: string } | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const prevRequestsCountRef = useRef<number | null>(null);
   const latestKnownIdRef = useRef<string | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
+  const exportIncidentsCSV = () => {
+    if (requests.length === 0) return;
+    const headers = ["Incident ID", "Student Name", "Phone", "Category", "Location", "Status", "Reported At", "Resolved By"];
+    const rows = requests.map((r) => [
+      `"${r.id}"`,
+      `"${r.studentName}"`,
+      `"${r.phoneNumber || "N/A"}"`,
+      `"${r.category}"`,
+      `"${(r.campusLocation || "").replace(/"/g, '""')}"`,
+      `"${r.status}"`,
+      `"${r.createdAt}"`,
+      `"${r.resolvedBy || "N/A"}"`,
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `safecampus_incident_log_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const playAlertSound = () => {
+    if (!soundEnabled) return;
     try {
       const AudioContextClass =
         window.AudioContext ||
@@ -379,7 +405,23 @@ export default function SecurityPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setSoundEnabled((prev) => !prev)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold border transition ${
+                soundEnabled
+                  ? "border-emerald-600 bg-emerald-950/40 text-emerald-300"
+                  : "border-slate-700 bg-slate-900 text-slate-400"
+              }`}
+            >
+              {soundEnabled ? "🔊 Audio: ON" : "🔇 Audio: OFF"}
+            </button>
+            <button
+              onClick={exportIncidentsCSV}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold transition"
+            >
+              <span>⬇</span> Export CSV Log
+            </button>
             <button
               onClick={playAlertSound}
               className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-bold shadow-md shadow-red-900/40 transition active:scale-95"
@@ -469,9 +511,12 @@ export default function SecurityPage() {
                         {req.studentName}
                       </span>
                       {req.phoneNumber && (
-                        <span className="text-xs text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">
+                        <a
+                          href={`tel:${req.phoneNumber}`}
+                          className="text-xs text-blue-400 hover:text-blue-300 font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded transition inline-flex items-center gap-1"
+                        >
                           📞 {req.phoneNumber}
-                        </span>
+                        </a>
                       )}
                       <span className="rounded-full bg-blue-900/60 text-blue-300 px-2.5 py-0.5 text-xs font-semibold">
                         {req.category}
