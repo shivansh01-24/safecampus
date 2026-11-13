@@ -74,6 +74,50 @@ export const CAMPUS_ZONES: string[] = [
   "VET - Vet Clinic",
 ];
 
+export type ZoneGroup = {
+  label: string;
+  zones: string[];
+};
+
+// picks zones by their block code (the part before " - ") and keeps the original order
+const byCode = (...codes: string[]): string[] =>
+  CAMPUS_ZONES.filter((zone) => codes.includes(zone.split(" - ")[0]));
+
+// used to show the dropdown in groups so students can find their block faster
+export const ZONE_GROUPS: ZoneGroup[] = [
+  { label: "Gate & Health Services", zones: byCode("00", "3", "VET") },
+  {
+    label: "Academic Schools",
+    zones: byCode(
+      "1A", "1B", "4", "6", "7", "8", "14", "15B", "16", "18", "19", "20",
+      "21", "25", "26", "27", "28", "33", "34", "36", "37A", "38", "55", "59",
+    ),
+  },
+  {
+    label: "Administration & Student Services",
+    zones: byCode("13", "15A", "29", "30", "31", "32"),
+  },
+  {
+    label: "Library, Labs & Workshops",
+    zones: byCode("37", "39", "58", "60", "61"),
+  },
+  {
+    label: "Auditoriums, Sports & Public Areas",
+    zones: byCode("2A", "5", "15", "35", "47"),
+  },
+  {
+    label: "Boys Hostels & Residences",
+    zones: byCode(
+      "BH-1", "BH-2", "BH-3", "BH-4", "BH-5", "BH-6", "BH-7",
+      "BS-11", "BS-12", "BS-13", "41-AB", "41-CD",
+    ),
+  },
+  {
+    label: "Girls Hostels & Residences",
+    zones: byCode("GH-1", "GH-2", "GH-3", "GH-4", "GH-5", "GH-6", "GH-7", "GS-11", "GS-12"),
+  },
+];
+
 export const FLOOR_OPTIONS: string[] = [
   "Ground Floor",
   "1st Floor",

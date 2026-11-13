@@ -1,8 +1,8 @@
 "use client";
 import { useId } from "react";
 import {
-  CAMPUS_ZONES,
   FLOOR_OPTIONS,
+  ZONE_GROUPS,
   type LocationData,
 } from "@/lib/campusLocations";
 
@@ -38,10 +38,14 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           onChange={(e) => update({ zone: e.target.value })}
           className={fieldClass}
         >
-          {CAMPUS_ZONES.map((zone) => (
-            <option key={zone} value={zone}>
-              {zone}
-            </option>
+          {ZONE_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.zones.map((zone) => (
+                <option key={zone} value={zone}>
+                  {zone}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>
