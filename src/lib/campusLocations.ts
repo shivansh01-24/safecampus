@@ -92,3 +92,23 @@ export const DEFAULT_LOCATION: LocationData = {
   floor: FLOOR_OPTIONS[0],
   landmark: "",
 };
+
+// trims extra spaces and cuts the landmark to the allowed length
+export function cleanLocation(loc: LocationData): LocationData {
+  return {
+    zone: loc.zone,
+    floor: loc.floor,
+    landmark: loc.landmark.replace(/\s+/g, " ").trim().slice(0, LANDMARK_MAX_LENGTH),
+  };
+}
+
+export function isValidLocation(loc: LocationData): boolean {
+  return CAMPUS_ZONES.includes(loc.zone) && FLOOR_OPTIONS.includes(loc.floor);
+}
+
+// one line text for a responder, e.g. "34 - School of CSE | 2nd Floor | Lab 204"
+export function formatLocation(loc: LocationData): string {
+  const parts = [loc.zone, loc.floor];
+  if (loc.landmark.trim()) parts.push(loc.landmark.trim());
+  return parts.join(" | ");
+}
