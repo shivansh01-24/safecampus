@@ -142,7 +142,16 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Saved to backend successfully:", data);
+        try {
+          const channel = new BroadcastChannel("campus_shield_emergency");
+          channel.postMessage({ type: "NEW_EMERGENCY" });
+          channel.close();
+        } catch {
+        }
+        try {
+          localStorage.setItem("campus_last_emergency_trigger", Date.now().toString());
+        } catch {
+        }
       })
       .catch((err) => {
         console.log("Backend offline or connection error:", err);
@@ -161,10 +170,6 @@ export default function Home() {
           <Link href="/" className="text-xl font-bold">
             Campus<span className="text-blue-700">Shield</span>
           </Link>
-
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-            Simulation Demo
-          </span>
         </div>
       </header>
 
@@ -347,15 +352,13 @@ export default function Home() {
           ))}
         </section>
 
-        <aside className="mt-10 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <h2 className="font-semibold text-amber-900">
-            Simulation-only notice
+        <aside className="mt-10 rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <h2 className="font-semibold text-blue-900">
+            Emergency Guidelines
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-amber-800">
-            This student project does not contact real emergency services and
-            cannot guarantee a response. Verify official contact details before
-            any real-world deployment.
+          <p className="mt-2 text-sm leading-6 text-blue-800">
+            For critical life-threatening situations, also notify the campus central control room or nearest security outpost immediately.
           </p>
         </aside>
       </div>
