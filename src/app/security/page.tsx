@@ -137,7 +137,7 @@ export default function SecurityPage() {
   }, []);
 
   const loadRequests = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
     fetch(`${apiBase}/api/requests`)
       .then((res) => res.json())
       .then((data) => {
@@ -194,7 +194,7 @@ export default function SecurityPage() {
   }, []);
 
   const updateStatus = (id: string, newStatus: "Pending" | "Dispatched" | "Resolved") => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
     fetch(`${apiBase}/api/requests/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -231,7 +231,7 @@ export default function SecurityPage() {
     setAuthError("");
     setAuthLoading(true);
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
     fetch(`${apiBase}/api/guards/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

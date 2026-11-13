@@ -8,6 +8,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+  req.url = req.url.replace(/\/{2,}/g, "/");
+  next();
+});
 
 const PORT = process.env.PORT || 5000;
 
