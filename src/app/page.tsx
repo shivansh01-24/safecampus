@@ -9,6 +9,7 @@ type EmergencyService = {
 };
 type EmergencyRequest = {
   studentName: string;
+  phoneNumber?: string;
   category: string;
   campusLocation?: string;
   description: string;
@@ -101,6 +102,8 @@ const CAMPUS_LOCATIONS = [
 
 export default function Home() {
   const [studentName, setStudentName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [category, setCategory] = useState("Medical");
   const [campusLocation, setCampusLocation] = useState(CAMPUS_LOCATIONS[0]);
   const [description, setDescription] = useState("");
@@ -109,8 +112,16 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const cleanPhone = phoneNumber.trim().replace(/\D/g, "");
+    if (cleanPhone.length !== 10) {
+      setPhoneError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    setPhoneError("");
+
     const newRequest: EmergencyRequest = {
       studentName,
+      phoneNumber: cleanPhone,
       category,
       campusLocation,
       description,
@@ -138,6 +149,7 @@ export default function Home() {
       });
 
     setStudentName("");
+    setPhoneNumber("");
     setCategory("Medical");
     setCampusLocation(CAMPUS_LOCATIONS[0]);
     setDescription("");
@@ -176,6 +188,34 @@ export default function Home() {
                 placeholder="Enter your full name"
                 className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
               />
+            </div>
+            <div>
+              <label className="mb-2 block font-medium">Contact Phone Number (10 Digits Required)</label>
+
+              <input
+                type="tel"
+                required
+                pattern="[0-9]{10}"
+                maxLength={10}
+                minLength={10}
+                value={phoneNumber}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setPhoneNumber(val);
+                  if (val.length === 10) {
+                    setPhoneError("");
+                  }
+                }}
+                placeholder="Enter 10-digit mobile number (e.g. 9876543210)"
+                className={`w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-600 ${
+                  phoneError ? "border-red-500 bg-red-50" : "border-slate-300"
+                }`}
+              />
+              {phoneError && (
+                <p className="mt-1.5 text-xs font-semibold text-red-600">
+                  {phoneError}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-2 block font-medium">
@@ -255,10 +295,15 @@ export default function Home() {
                   className="flex flex-col justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center"
                 >
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-slate-900">
                         {req.studentName}
                       </span>
+                      {req.phoneNumber && (
+                        <span className="text-xs font-mono text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded">
+                          📞 {req.phoneNumber}
+                        </span>
+                      )}
                       <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
                         {req.category}
                       </span>
