@@ -73,3 +73,22 @@ export const CAMPUS_ZONES: string[] = [
   "GS-12 - Girls Studios 12",
   "VET - Vet Clinic",
 ];
+
+export const FLOOR_OPTIONS: string[] = [
+  "Ground Floor",
+  "1st Floor",
+  "2nd Floor",
+  "3rd Floor",
+  "4th Floor",
+  "5th Floor or above",
+  "Basement / Parking",
+  "Outdoor / Open Area",
+];
+
+export const LANDMARK_MAX_LENGTH = 80;
+
+export const DEFAULT_LOCATION: LocationData = {
+  zone: CAMPUS_ZONES[0],
+  floor: FLOOR_OPTIONS[0],
+  landmark: "",
+};
