@@ -26,6 +26,7 @@ export default function SecurityPage() {
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [requests, setRequests] = useState<EmergencyRequestItem[]>([]);
 
   useEffect(() => {
     try {
@@ -36,6 +37,24 @@ export default function SecurityPage() {
     } catch {
     }
   }, []);
+
+  const loadRequests = () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${apiBase}/api/requests`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data) {
+          setRequests(data.data);
+        }
+      })
+      .catch(() => {
+      });
+  };
+
+  useEffect(() => {
+    if (!currentGuard) return;
+    loadRequests();
+  }, [currentGuard]);
 
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,6 +109,10 @@ export default function SecurityPage() {
     } catch {
     }
   };
+
+  const totalCount = requests.length;
+  const pendingCount = requests.filter((r) => r.status === "Pending").length;
+  const handledCount = requests.filter((r) => r.status !== "Pending").length;
 
   if (!currentGuard) {
     return (
@@ -197,10 +220,83 @@ export default function SecurityPage() {
           </div>
         </header>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
-          <p className="text-sm text-slate-400">
-            Guard session active for {currentGuard.name}. Incident queue ready for dispatch integration.
-          </p>
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Total Alerts
+            </p>
+            <p className="mt-2 text-3xl font-extrabold text-white">
+              {totalCount}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-5 shadow-lg">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+              Pending Response
+            </p>
+            <p className="mt-2 text-3xl font-extrabold text-amber-300">
+              {pendingCount}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-900/40 bg-emerald-950/20 p-5 shadow-lg">
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              Dispatched & Resolved
+            </p>
+            <p className="mt-2 text-3xl font-extrabold text-emerald-300">
+              {handledCount}
+            </p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-lg font-bold text-white">Incoming Emergency Incidents</h2>
+
+          {requests.length === 0 ? (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-12 text-center text-slate-500">
+              No emergency requests currently active. System listening for alerts.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {requests.map((req) => (
+                <div
+                  key={req.id}
+                  className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                        {req.id}
+                      </span>
+                      <span className="font-bold text-white">
+                        {req.studentName}
+                      </span>
+                      {req.phoneNumber && (
+                        <span className="text-xs text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">
+                          📞 {req.phoneNumber}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-blue-900/60 text-blue-300 px-2.5 py-0.5 text-xs font-semibold">
+                        {req.category}
+                      </span>
+                    </div>
+
+                    <p className="text-xs font-semibold text-emerald-400">
+                      📍 Location: {req.campusLocation || "General campus premises"}
+                    </p>
+
+                    <p className="text-xs text-slate-300">
+                      {req.description}
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-amber-900/50 text-amber-300 px-3 py-1 text-xs font-semibold">
+                    {req.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>
