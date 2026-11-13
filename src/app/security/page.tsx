@@ -18,6 +18,8 @@ type EmergencyRequestItem = {
   campusLocation?: string;
   status: "Pending" | "Dispatched" | "Resolved";
   createdAt: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
 };
 
 export default function SecurityPage() {
@@ -27,6 +29,7 @@ export default function SecurityPage() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [requests, setRequests] = useState<EmergencyRequestItem[]>([]);
+  const [filter, setFilter] = useState<"ALL" | "Pending" | "Dispatched" | "Resolved">("Pending");
 
   useEffect(() => {
     try {
@@ -55,6 +58,39 @@ export default function SecurityPage() {
     if (!currentGuard) return;
     loadRequests();
   }, [currentGuard]);
+
+  const updateStatus = (id: string, newStatus: "Pending" | "Dispatched" | "Resolved") => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${apiBase}/api/requests/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: newStatus,
+        guardName: currentGuard?.name,
+        guardBadgeId: currentGuard?.badgeId,
+      }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        loadRequests();
+      })
+      .catch(() => {
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.id === id
+              ? {
+                  ...r,
+                  status: newStatus,
+                  resolvedBy:
+                    newStatus === "Resolved"
+                      ? `${currentGuard?.name} (${currentGuard?.badgeId || "Staff"})`
+                      : r.resolvedBy,
+                }
+              : r
+          )
+        );
+      });
+  };
 
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -113,6 +149,15 @@ export default function SecurityPage() {
   const totalCount = requests.length;
   const pendingCount = requests.filter((r) => r.status === "Pending").length;
   const handledCount = requests.filter((r) => r.status !== "Pending").length;
+
+  const filteredList =
+    filter === "ALL"
+      ? [...requests].sort((a, b) => {
+          if (a.status === "Pending" && b.status !== "Pending") return -1;
+          if (a.status !== "Pending" && b.status === "Pending") return 1;
+          return 0;
+        })
+      : requests.filter((r) => r.status === filter);
 
   if (!currentGuard) {
     return (
@@ -249,16 +294,32 @@ export default function SecurityPage() {
           </div>
         </section>
 
+        <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+          {(["Pending", "Dispatched", "Resolved", "ALL"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                filter === tab
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
+                  : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-800"
+              }`}
+            >
+              {tab} ({tab === "ALL" ? requests.length : requests.filter((r) => r.status === tab).length})
+            </button>
+          ))}
+        </div>
+
         <section className="space-y-4">
           <h2 className="text-lg font-bold text-white">Incoming Emergency Incidents</h2>
 
-          {requests.length === 0 ? (
+          {filteredList.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-12 text-center text-slate-500">
-              No emergency requests currently active. System listening for alerts.
+              No emergency requests found in this filter category.
             </div>
           ) : (
             <div className="space-y-3">
-              {requests.map((req) => (
+              {filteredList.map((req) => (
                 <div
                   key={req.id}
                   className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
@@ -290,9 +351,37 @@ export default function SecurityPage() {
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-amber-900/50 text-amber-300 px-3 py-1 text-xs font-semibold">
-                    {req.status}
-                  </span>
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    {req.status === "Pending" && (
+                      <button
+                        onClick={() => updateStatus(req.id, "Dispatched")}
+                        className="rounded-xl bg-blue-600 hover:bg-blue-500 transition px-3 py-1.5 text-xs font-bold text-white shadow-md"
+                      >
+                        Dispatch Officer →
+                      </button>
+                    )}
+
+                    {req.status === "Dispatched" && (
+                      <button
+                        onClick={() => updateStatus(req.id, "Resolved")}
+                        className="rounded-xl bg-emerald-600 hover:bg-emerald-500 transition px-3 py-1.5 text-xs font-bold text-white shadow-md"
+                      >
+                        Mark as Resolved ✓
+                      </button>
+                    )}
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        req.status === "Pending"
+                          ? "bg-amber-900/50 text-amber-300"
+                          : req.status === "Dispatched"
+                          ? "bg-blue-900/50 text-blue-300"
+                          : "bg-emerald-900/50 text-emerald-300"
+                      }`}
+                    >
+                      {req.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
