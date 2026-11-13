@@ -243,7 +243,7 @@ app.post("/api/requests", (req, res) => {
       floor: resolvedFloor,
       landmark: resolvedLandmark || "General campus premises",
     },
-    campusLocation: resolvedZone,
+    campusLocation: resolvedLandmark ? `${resolvedZone} | ${resolvedFloor} | ${resolvedLandmark}` : `${resolvedZone} | ${resolvedFloor}`,
     status: "Pending",
     createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   };
