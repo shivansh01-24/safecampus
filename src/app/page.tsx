@@ -1,6 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import LocationPicker from "@/components/LocationPicker";
+import {
+  DEFAULT_LOCATION,
+  cleanLocation,
+  formatLocation,
+  isValidLocation,
+  type LocationData,
+} from "@/lib/campusLocations";
 
 type EmergencyService = {
   title: string;
@@ -12,6 +20,7 @@ type EmergencyRequest = {
   phoneNumber?: string;
   category: string;
   campusLocation?: string;
+  location: LocationData;
   description: string;
 };
 
@@ -33,79 +42,13 @@ const emergencyServices: EmergencyService[] = [
   },
 ];
 
-const CAMPUS_LOCATIONS = [
-  "00 - Main Gate 1",
-  "1A - School of Design (Fashion)",
-  "1B - School of Design (Fashion)",
-  "2A - Uni Auditorium",
-  "3 - Uni-Health Center",
-  "4 - Lovely Institute of Technology-Pharmacy",
-  "5 - Animal House",
-  "6 - School of Architecture & Designing",
-  "7 - School of Pharmaceutical Science",
-  "8 - School of Journalism, Film Production and Creative Arts",
-  "13 - Student Welfare Wing",
-  "14 - School of Business",
-  "15 - Uni Mall",
-  "15A - Student Resource Centre",
-  "15B - School of Hotel Management and Tourism",
-  "16 - Baldev Raj Mittal UniPolis",
-  "18 - Lovely School of Education",
-  "19 - School of Journalism, Films And Creative Arts - I",
-  "20 - School of Law",
-  "21 - School of Law",
-  "25 - School of AI and Emerging Technology",
-  "26 - School of AI and Emerging Technology",
-  "27 - School of Computing and Artificial Intelligence",
-  "28 - School of Computing and Artificial Intelligence",
-  "29 - Administration-I",
-  "30 - Central Administrative Office",
-  "31 - Admission Block",
-  "32 - Administration-II",
-  "33 - School of Computer Science & Engineering",
-  "34 - School of Computer Science & Engineering",
-  "35 - Shanti Devi Mittal Auditorium",
-  "36 - School of Electronics and Electrical Engineering",
-  "37 - Centre Library",
-  "37A - School of Bio Engineering and Bio Sciences",
-  "38 - School of Computer Application / Division of Research and Development",
-  "39 - Innovation Studio",
-  "41-AB - Boys Apartment",
-  "41-CD - Staff Residence",
-  "47 - Shanti Devi Mittal Indoor Sports Complex",
-  "55 - School of Mechanical Engineering / Polytechnic / Chemical Sciences",
-  "58 - Mechanical Engineering Workshops",
-  "59 - New Polytechnic Block",
-  "60 - Workshop",
-  "61 - Student Learning Center",
-  "BH-1 - Boys Hostel-01",
-  "BH-2 - Boys Hostel-02",
-  "BH-3 - Boys Hostel-03",
-  "BH-4 - Boys Hostel-04",
-  "BH-5 - Boys Hostel-05",
-  "BH-6 - Boys Hostel-06",
-  "BH-7 - Boys Hostel-07",
-  "BS-11 - Boys Studios 11",
-  "BS-12 - Boys Studios 12",
-  "BS-13 - Boys Studios 13",
-  "GH-1 - Girls Hostel-01",
-  "GH-2 - Girls Hostel-02",
-  "GH-3 - Girls Hostel-03",
-  "GH-4 - Girls Hostel-04",
-  "GH-5 - Girls Hostel-05",
-  "GH-6 - Girls Hostel-06",
-  "GH-7 - Girls Hostel-07",
-  "GS-11 - Girls Studios 11",
-  "GS-12 - Girls Studios 12",
-  "VET - Vet Clinic",
-];
-
 export default function Home() {
   const [studentName, setStudentName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [category, setCategory] = useState("Medical");
-  const [campusLocation, setCampusLocation] = useState(CAMPUS_LOCATIONS[0]);
+  const [location, setLocation] = useState<LocationData>(DEFAULT_LOCATION);
+  const [locationError, setLocationError] = useState("");
   const [description, setDescription] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [requestsList, setRequestsList] = useState<EmergencyRequest[]>([]);
@@ -119,11 +62,19 @@ export default function Home() {
     }
     setPhoneError("");
 
+    const cleanedLocation = cleanLocation(location);
+    if (!isValidLocation(cleanedLocation)) {
+      setLocationError("Please select your building before submitting.");
+      return;
+    }
+    setLocationError("");
+
     const newRequest: EmergencyRequest = {
       studentName,
       phoneNumber: cleanPhone,
       category,
-      campusLocation,
+      campusLocation: cleanedLocation.zone,
+      location: cleanedLocation,
       description,
     };
     console.log("Emergency Request Submitted:", newRequest);
@@ -161,7 +112,7 @@ export default function Home() {
     setStudentName("");
     setPhoneNumber("");
     setCategory("Medical");
-    setCampusLocation(CAMPUS_LOCATIONS[0]);
+    setLocation(DEFAULT_LOCATION);
     setDescription("");
   };
   return (
@@ -170,6 +121,12 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="text-xl font-bold">
             Campus<span className="text-blue-700">Shield</span>
+          </Link>
+          <Link
+            href="/security"
+            className="text-xs font-semibold text-slate-600 hover:text-blue-700 transition"
+          >
+            🛡️ Guard Response Portal →
           </Link>
         </div>
       </header>
@@ -239,21 +196,22 @@ export default function Home() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block font-medium">
+              <p className="mb-2 font-medium">
                 Campus Location (Where do you need help?)
-              </label>
+              </p>
 
-              <select
-                value={campusLocation}
-                onChange={(e) => setCampusLocation(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600 bg-white"
-              >
-                {CAMPUS_LOCATIONS.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc}
-                  </option>
-                ))}
-              </select>
+              <LocationPicker
+                value={location}
+                onChange={(next) => {
+                  setLocation(next);
+                  if (next.zone) setLocationError("");
+                }}
+              />
+              {locationError && (
+                <p className="mt-1.5 text-xs font-semibold text-red-600">
+                  {locationError}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-2 block font-medium">
@@ -315,7 +273,7 @@ export default function Home() {
                       </span>
                     </div>
                     <p className="mt-1 text-xs font-semibold text-emerald-700">
-                      📍 Location: {req.campusLocation || CAMPUS_LOCATIONS[0]}
+                      📍 Location: {formatLocation(req.location)}
                     </p>
                     <p className="mt-1 text-sm text-slate-600">
                       {req.description}

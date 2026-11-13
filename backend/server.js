@@ -78,6 +78,18 @@ const CAMPUS_LOCATIONS = [
   "VET - Vet Clinic",
 ];
 
+const FLOOR_OPTIONS = [
+  "Ground Floor",
+  "1st Floor",
+  "2nd Floor",
+  "3rd Floor",
+  "4th Floor",
+  "5th Floor or above",
+  "Basement / Parking",
+  "Outdoor / Open Area",
+];
+const LANDMARK_MAX_LENGTH = 80;
+
 const DATA_DIR = path.join(__dirname, "data");
 const ACTIVE_FILE = path.join(DATA_DIR, "active_requests.json");
 const RESOLVED_FILE = path.join(DATA_DIR, "resolved_history.json");
@@ -202,8 +214,23 @@ app.post("/api/requests", (req, res) => {
   const resolvedZone =
     (typeof location === "object" && location?.zone) ||
     (typeof location === "string" && location) ||
-    campusLocation ||
-    CAMPUS_LOCATIONS[0];
+    campusLocation;
+
+  if (!CAMPUS_LOCATIONS.includes(resolvedZone)) {
+    return res.status(400).json({
+      success: false,
+      message: "Please select a valid campus building.",
+    });
+  }
+
+  const rawFloor = typeof location === "object" ? location?.floor : undefined;
+  const resolvedFloor = FLOOR_OPTIONS.includes(rawFloor) ? rawFloor : "Ground Floor";
+
+  const rawLandmark = typeof location === "object" ? location?.landmark : "";
+  const resolvedLandmark =
+    typeof rawLandmark === "string"
+      ? rawLandmark.replace(/\s+/g, " ").trim().slice(0, LANDMARK_MAX_LENGTH)
+      : "";
 
   const newRequest = {
     id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -213,8 +240,8 @@ app.post("/api/requests", (req, res) => {
     description: description.trim(),
     location: {
       zone: resolvedZone,
-      floor: (typeof location === "object" && location?.floor) || "Ground Floor",
-      landmark: (typeof location === "object" && location?.landmark) || "General campus premises",
+      floor: resolvedFloor,
+      landmark: resolvedLandmark || "General campus premises",
     },
     campusLocation: resolvedZone,
     status: "Pending",
