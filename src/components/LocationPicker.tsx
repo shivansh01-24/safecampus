@@ -36,8 +36,12 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           id={`${id}-zone`}
           value={value.zone}
           onChange={(e) => update({ zone: e.target.value })}
+          required
           className={fieldClass}
         >
+          <option value="" disabled>
+            Select your building
+          </option>
           {ZONE_GROUPS.map((group) => (
             <optgroup key={group.label} label={group.label}>
               {group.zones.map((zone) => (

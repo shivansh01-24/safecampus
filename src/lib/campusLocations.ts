@@ -131,8 +131,10 @@ export const FLOOR_OPTIONS: string[] = [
 
 export const LANDMARK_MAX_LENGTH = 80;
 
+// zone is empty on purpose, the student has to pick the building themselves
+// so a wrong default (like Main Gate) is never sent in an emergency
 export const DEFAULT_LOCATION: LocationData = {
-  zone: CAMPUS_ZONES[0],
+  zone: "",
   floor: FLOOR_OPTIONS[0],
   landmark: "",
 };
