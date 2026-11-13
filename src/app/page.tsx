@@ -10,6 +10,7 @@ type EmergencyService = {
 type EmergencyRequest = {
   studentName: string;
   category: string;
+  campusLocation?: string;
   description: string;
 };
 
@@ -19,7 +20,6 @@ const emergencyServices: EmergencyService[] = [
     description: "for campus saftey",
     icon: "campus",
   },
-
   {
     title: "medical assistance",
     description: "for medical concerns and supports.",
@@ -32,22 +32,87 @@ const emergencyServices: EmergencyService[] = [
   },
 ];
 
+const CAMPUS_LOCATIONS = [
+  "00 - Main Gate 1",
+  "1A - School of Design (Fashion)",
+  "1B - School of Design (Fashion)",
+  "2A - Uni Auditorium",
+  "3 - Uni-Health Center",
+  "4 - Lovely Institute of Technology-Pharmacy",
+  "5 - Animal House",
+  "6 - School of Architecture & Designing",
+  "7 - School of Pharmaceutical Science",
+  "8 - School of Journalism, Film Production and Creative Arts",
+  "13 - Student Welfare Wing",
+  "14 - School of Business",
+  "15 - Uni Mall",
+  "15A - Student Resource Centre",
+  "15B - School of Hotel Management and Tourism",
+  "16 - Baldev Raj Mittal UniPolis",
+  "18 - Lovely School of Education",
+  "19 - School of Journalism, Films And Creative Arts - I",
+  "20 - School of Law",
+  "21 - School of Law",
+  "25 - School of AI and Emerging Technology",
+  "26 - School of AI and Emerging Technology",
+  "27 - School of Computing and Artificial Intelligence",
+  "28 - School of Computing and Artificial Intelligence",
+  "29 - Administration-I",
+  "30 - Central Administrative Office",
+  "31 - Admission Block",
+  "32 - Administration-II",
+  "33 - School of Computer Science & Engineering",
+  "34 - School of Computer Science & Engineering",
+  "35 - Shanti Devi Mittal Auditorium",
+  "36 - School of Electronics and Electrical Engineering",
+  "37 - Centre Library",
+  "37A - School of Bio Engineering and Bio Sciences",
+  "38 - School of Computer Application / Division of Research and Development",
+  "39 - Innovation Studio",
+  "41-AB - Boys Apartment",
+  "41-CD - Staff Residence",
+  "47 - Shanti Devi Mittal Indoor Sports Complex",
+  "55 - School of Mechanical Engineering / Polytechnic / Chemical Sciences",
+  "58 - Mechanical Engineering Workshops",
+  "59 - New Polytechnic Block",
+  "60 - Workshop",
+  "61 - Student Learning Center",
+  "BH-1 - Boys Hostel-01",
+  "BH-2 - Boys Hostel-02",
+  "BH-3 - Boys Hostel-03",
+  "BH-4 - Boys Hostel-04",
+  "BH-5 - Boys Hostel-05",
+  "BH-6 - Boys Hostel-06",
+  "BH-7 - Boys Hostel-07",
+  "BS-11 - Boys Studios 11",
+  "BS-12 - Boys Studios 12",
+  "BS-13 - Boys Studios 13",
+  "GH-1 - Girls Hostel-01",
+  "GH-2 - Girls Hostel-02",
+  "GH-3 - Girls Hostel-03",
+  "GH-4 - Girls Hostel-04",
+  "GH-5 - Girls Hostel-05",
+  "GH-6 - Girls Hostel-06",
+  "GH-7 - Girls Hostel-07",
+  "GS-11 - Girls Studios 11",
+  "GS-12 - Girls Studios 12",
+  "VET - Vet Clinic",
+];
+
 export default function Home() {
   const [studentName, setStudentName] = useState("");
   const [category, setCategory] = useState("Medical");
+  const [campusLocation, setCampusLocation] = useState(CAMPUS_LOCATIONS[0]);
   const [description, setDescription] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  // list to store all submitted requests so they show on screen
   const [requestsList, setRequestsList] = useState<EmergencyRequest[]>([]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    //e = event so any cahnge in evnt will trigger it e container information about the event that occurred
-    e.preventDefault(); //prevents the browser form refreshing the page //so normal in html if somnone submit what avascript do it refresh the page to naviagte to  oher page but here in react we set our own rule thta after submissionw hat will ahppen so we prevent the default behavior of the form submission which is to refresh the page and navigate to another page
+    e.preventDefault();
     const newRequest: EmergencyRequest = {
-      //so we create a const then we made the stucture which taht cosnst have to foloow which emergency request
-      //here its creates an object using the emergency request type and the values from the form fields
       studentName,
       category,
+      campusLocation,
       description,
     };
     console.log("Emergency Request Submitted:", newRequest);
@@ -55,10 +120,8 @@ export default function Home() {
       "Your assistance request has been submitted successfully.",
     );
 
-    // add to our submitted requests list so student can see it below
     setRequestsList((prev) => [newRequest, ...prev]);
 
-    // send request to backend express server on port 5000
     fetch("http://localhost:5000/api/requests", {
       method: "POST",
       headers: {
@@ -71,12 +134,12 @@ export default function Home() {
         console.log("Saved to backend successfully:", data);
       })
       .catch((err) => {
-        // if backend is not running, request is still preserved in frontend state
         console.log("Backend offline or connection error:", err);
       });
 
-    setStudentName(""); //here resets all thing which in the form so it become new
+    setStudentName("");
     setCategory("Medical");
+    setCampusLocation(CAMPUS_LOCATIONS[0]);
     setDescription("");
   };
   return (
@@ -101,7 +164,6 @@ export default function Home() {
             Submit your details to request campus support.
           </p>
 
-          {/* form */}
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div>
               <label className="mb-2 block font-medium">Student Name</label>
@@ -132,6 +194,23 @@ export default function Home() {
             </div>
             <div>
               <label className="mb-2 block font-medium">
+                Campus Location (Where do you need help?)
+              </label>
+
+              <select
+                value={campusLocation}
+                onChange={(e) => setCampusLocation(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600 bg-white"
+              >
+                {CAMPUS_LOCATIONS.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block font-medium">
                 Describe Your Emergency
               </label>
 
@@ -158,9 +237,6 @@ export default function Home() {
           )}
         </section>
 
-        {/* form end */}
-
-        {/* submitted requests section so student can see their submitted requests */}
         <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold">Recent Submitted Requests</h2>
           <p className="mt-1 text-sm text-slate-600">
@@ -187,6 +263,9 @@ export default function Home() {
                         {req.category}
                       </span>
                     </div>
+                    <p className="mt-1 text-xs font-semibold text-emerald-700">
+                      📍 Location: {req.campusLocation || CAMPUS_LOCATIONS[0]}
+                    </p>
                     <p className="mt-1 text-sm text-slate-600">
                       {req.description}
                     </p>
