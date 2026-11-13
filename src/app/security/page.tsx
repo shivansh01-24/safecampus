@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type GuardUser = {
   id: string;
@@ -30,6 +30,71 @@ export default function SecurityPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [requests, setRequests] = useState<EmergencyRequestItem[]>([]);
   const [filter, setFilter] = useState<"ALL" | "Pending" | "Dispatched" | "Resolved">("Pending");
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const playAlertSound = () => {
+    try {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioContextClass();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1320, now + 0.12);
+      osc.frequency.setValueAtTime(880, now + 0.24);
+      osc.frequency.setValueAtTime(1320, now + 0.36);
+      osc.frequency.setValueAtTime(880, now + 0.48);
+      osc.frequency.setValueAtTime(1320, now + 0.60);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.setValueAtTime(0.65, now + 0.12);
+      gain.gain.setValueAtTime(0.35, now + 0.24);
+      gain.gain.setValueAtTime(0.65, now + 0.36);
+      gain.gain.setValueAtTime(0.35, now + 0.48);
+      gain.gain.setValueAtTime(0.65, now + 0.60);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.75);
+    } catch {
+    }
+  };
+
+  useEffect(() => {
+    const unlock = () => {
+      try {
+        const AudioContextClass =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (!audioCtxRef.current && AudioContextClass) {
+          audioCtxRef.current = new AudioContextClass();
+        }
+        if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+          audioCtxRef.current.resume().catch(() => {});
+        }
+      } catch {
+      }
+    };
+    window.addEventListener("click", unlock);
+    window.addEventListener("keydown", unlock);
+    return () => {
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -249,7 +314,13 @@ export default function SecurityPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={playAlertSound}
+              className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-bold shadow-md shadow-red-900/40 transition active:scale-95"
+            >
+              <span>🔊</span> Test Siren Alert
+            </button>
             <button
               onClick={handleLogout}
               className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg font-medium transition"
