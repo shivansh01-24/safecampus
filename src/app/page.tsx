@@ -2,7 +2,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import LocationPicker from "@/components/LocationPicker";
-import { DEFAULT_LOCATION, type LocationData } from "@/lib/campusLocations";
+import {
+  DEFAULT_LOCATION,
+  cleanLocation,
+  formatLocation,
+  isValidLocation,
+  type LocationData,
+} from "@/lib/campusLocations";
 
 type EmergencyService = {
   title: string;
@@ -14,6 +20,7 @@ type EmergencyRequest = {
   phoneNumber?: string;
   category: string;
   campusLocation?: string;
+  location: LocationData;
   description: string;
 };
 
@@ -41,6 +48,7 @@ export default function Home() {
   const [phoneError, setPhoneError] = useState("");
   const [category, setCategory] = useState("Medical");
   const [location, setLocation] = useState<LocationData>(DEFAULT_LOCATION);
+  const [locationError, setLocationError] = useState("");
   const [description, setDescription] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [requestsList, setRequestsList] = useState<EmergencyRequest[]>([]);
@@ -54,11 +62,19 @@ export default function Home() {
     }
     setPhoneError("");
 
+    const cleanedLocation = cleanLocation(location);
+    if (!isValidLocation(cleanedLocation)) {
+      setLocationError("Please select your building before submitting.");
+      return;
+    }
+    setLocationError("");
+
     const newRequest: EmergencyRequest = {
       studentName,
       phoneNumber: cleanPhone,
       category,
-      campusLocation: location.zone,
+      campusLocation: cleanedLocation.zone,
+      location: cleanedLocation,
       description,
     };
     console.log("Emergency Request Submitted:", newRequest);
@@ -177,7 +193,18 @@ export default function Home() {
                 Campus Location (Where do you need help?)
               </p>
 
-              <LocationPicker value={location} onChange={setLocation} />
+              <LocationPicker
+                value={location}
+                onChange={(next) => {
+                  setLocation(next);
+                  if (next.zone) setLocationError("");
+                }}
+              />
+              {locationError && (
+                <p className="mt-1.5 text-xs font-semibold text-red-600">
+                  {locationError}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-2 block font-medium">
@@ -239,7 +266,7 @@ export default function Home() {
                       </span>
                     </div>
                     <p className="mt-1 text-xs font-semibold text-emerald-700">
-                      📍 Location: {req.campusLocation}
+                      📍 Location: {formatLocation(req.location)}
                     </p>
                     <p className="mt-1 text-sm text-slate-600">
                       {req.description}
