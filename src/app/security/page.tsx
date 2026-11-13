@@ -30,6 +30,10 @@ export default function SecurityPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [requests, setRequests] = useState<EmergencyRequestItem[]>([]);
   const [filter, setFilter] = useState<"ALL" | "Pending" | "Dispatched" | "Resolved">("Pending");
+  const [newAlertBanner, setNewAlertBanner] = useState<{ id: string; studentName: string; location: string } | null>(null);
+
+  const prevRequestsCountRef = useRef<number | null>(null);
+  const latestKnownIdRef = useRef<string | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   const playAlertSound = () => {
@@ -111,8 +115,24 @@ export default function SecurityPage() {
     fetch(`${apiBase}/api/requests`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.data) {
-          setRequests(data.data);
+        if (data.data && data.data.length > 0) {
+          const freshList: EmergencyRequestItem[] = data.data;
+          const newest = freshList[0];
+          const isNewArrival =
+            (latestKnownIdRef.current !== null && newest.id !== latestKnownIdRef.current) ||
+            (prevRequestsCountRef.current !== null && freshList.length > prevRequestsCountRef.current);
+
+          if (isNewArrival) {
+            playAlertSound();
+            setNewAlertBanner({
+              id: newest.id,
+              studentName: newest.studentName,
+              location: newest.campusLocation || "Campus premises",
+            });
+          }
+          latestKnownIdRef.current = newest.id;
+          prevRequestsCountRef.current = freshList.length;
+          setRequests(freshList);
         }
       })
       .catch(() => {
@@ -122,7 +142,30 @@ export default function SecurityPage() {
   useEffect(() => {
     if (!currentGuard) return;
     loadRequests();
+    const interval = setInterval(loadRequests, 3000);
+    return () => clearInterval(interval);
   }, [currentGuard]);
+
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("campus_shield_emergency");
+      channel.onmessage = () => {
+        loadRequests();
+      };
+    } catch {
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "campus_last_emergency_trigger") {
+        loadRequests();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
   const updateStatus = (id: string, newStatus: "Pending" | "Dispatched" | "Resolved") => {
     const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -301,6 +344,28 @@ export default function SecurityPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
+        {newAlertBanner && (
+          <div className="rounded-2xl border border-red-500 bg-red-950/90 p-4 text-white shadow-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate-bounce">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl animate-pulse">🚨</span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-red-300">
+                  New Emergency Alert Received!
+                </p>
+                <p className="text-sm font-extrabold">
+                  {newAlertBanner.studentName} at {newAlertBanner.location} ({newAlertBanner.id})
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setNewAlertBanner(null)}
+              className="rounded-lg bg-red-800 hover:bg-red-700 px-3 py-1 text-xs font-bold text-white"
+            >
+              Acknowledge ✕
+            </button>
+          </div>
+        )}
+
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4">
           <div>
             <div className="flex items-center gap-2">
