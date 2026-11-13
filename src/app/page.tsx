@@ -133,7 +133,8 @@ export default function Home() {
 
     setRequestsList((prev) => [newRequest, ...prev]);
 
-    fetch("http://localhost:5000/api/requests", {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${apiBase}/api/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
