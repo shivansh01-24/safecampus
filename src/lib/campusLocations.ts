@@ -1,6 +1,3 @@
-// Campus location data used by the Location Communication module (Module 2).
-// Keep this list in sync with CAMPUS_LOCATIONS in backend/server.js.
-
 export type LocationData = {
   zone: string;
   floor: string;
@@ -79,11 +76,9 @@ export type ZoneGroup = {
   zones: string[];
 };
 
-// picks zones by their block code (the part before " - ") and keeps the original order
 const byCode = (...codes: string[]): string[] =>
   CAMPUS_ZONES.filter((zone) => codes.includes(zone.split(" - ")[0]));
 
-// used to show the dropdown in groups so students can find their block faster
 export const ZONE_GROUPS: ZoneGroup[] = [
   { label: "Gate & Health Services", zones: byCode("00", "3", "VET") },
   {
@@ -131,15 +126,12 @@ export const FLOOR_OPTIONS: string[] = [
 
 export const LANDMARK_MAX_LENGTH = 80;
 
-// zone is empty on purpose, the student has to pick the building themselves
-// so a wrong default (like Main Gate) is never sent in an emergency
 export const DEFAULT_LOCATION: LocationData = {
   zone: "",
   floor: FLOOR_OPTIONS[0],
   landmark: "",
 };
 
-// trims extra spaces and cuts the landmark to the allowed length
 export function cleanLocation(loc: LocationData): LocationData {
   return {
     zone: loc.zone,
@@ -152,7 +144,6 @@ export function isValidLocation(loc: LocationData): boolean {
   return CAMPUS_ZONES.includes(loc.zone) && FLOOR_OPTIONS.includes(loc.floor);
 }
 
-// one line text for a responder, e.g. "34 - School of CSE | 2nd Floor | Lab 204"
 export function formatLocation(loc: LocationData): string {
   const parts = [loc.zone, loc.floor];
   if (loc.landmark.trim()) parts.push(loc.landmark.trim());

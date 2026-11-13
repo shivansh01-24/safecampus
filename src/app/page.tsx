@@ -84,7 +84,8 @@ export default function Home() {
 
     setRequestsList((prev) => [newRequest, ...prev]);
 
-    fetch("http://localhost:5000/api/requests", {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${apiBase}/api/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -120,6 +121,12 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="text-xl font-bold">
             Campus<span className="text-blue-700">Shield</span>
+          </Link>
+          <Link
+            href="/security"
+            className="text-xs font-semibold text-slate-600 hover:text-blue-700 transition"
+          >
+            🛡️ Guard Response Portal →
           </Link>
         </div>
       </header>

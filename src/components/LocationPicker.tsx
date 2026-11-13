@@ -109,9 +109,6 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           ? `📍 Location sent with your request: ${formatLocation(cleanLocation(value))}`
           : "Select your building so your location can be sent with the request."}
       </p>
-      <p className="text-[11px] text-slate-500">
-        Simulation only. No real emergency response is dispatched from this app.
-      </p>
     </div>
   );
 }

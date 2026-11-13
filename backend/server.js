@@ -78,7 +78,6 @@ const CAMPUS_LOCATIONS = [
   "VET - Vet Clinic",
 ];
 
-// keep these in sync with src/lib/campusLocations.ts on the frontend
 const FLOOR_OPTIONS = [
   "Ground Floor",
   "1st Floor",
