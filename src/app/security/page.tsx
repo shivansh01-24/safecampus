@@ -401,7 +401,7 @@ export default function SecurityPage() {
               </h1>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Active Guard: {currentGuard.name} ({currentGuard.badgeId})
+              <span className="hidden md:inline">Active Guard: </span>{currentGuard.name} ({currentGuard.badgeId})
             </p>
           </div>
 
@@ -414,19 +414,24 @@ export default function SecurityPage() {
                   : "border-slate-700 bg-slate-900 text-slate-400"
               }`}
             >
-              {soundEnabled ? "🔊 Audio: ON" : "🔇 Audio: OFF"}
+              <span>{soundEnabled ? "🔊" : "🔇"}</span>
+              <span className="hidden sm:inline">{soundEnabled ? "Audio: ON" : "Audio: OFF"}</span>
             </button>
             <button
               onClick={exportIncidentsCSV}
               className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 px-3 py-1.5 text-xs font-semibold transition"
             >
-              <span>⬇</span> Export CSV Log
+              <span>⬇</span>
+              <span className="hidden sm:inline">Export CSV Log</span>
+              <span className="sm:hidden">CSV</span>
             </button>
             <button
               onClick={playAlertSound}
               className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-bold shadow-md shadow-red-900/40 transition active:scale-95"
             >
-              <span>🔊</span> Test Siren Alert
+              <span>🔊</span>
+              <span className="hidden sm:inline">Test Siren Alert</span>
+              <span className="sm:hidden">Siren</span>
             </button>
             <button
               onClick={handleLogout}
@@ -538,7 +543,7 @@ export default function SecurityPage() {
                         onClick={() => updateStatus(req.id, "Dispatched")}
                         className="rounded-xl bg-blue-600 hover:bg-blue-500 transition px-3 py-1.5 text-xs font-bold text-white shadow-md"
                       >
-                        Dispatch Officer →
+                        <span className="hidden xs:inline">Dispatch Officer</span><span className="xs:hidden">Dispatch</span> →
                       </button>
                     )}
 
@@ -547,7 +552,7 @@ export default function SecurityPage() {
                         onClick={() => updateStatus(req.id, "Resolved")}
                         className="rounded-xl bg-emerald-600 hover:bg-emerald-500 transition px-3 py-1.5 text-xs font-bold text-white shadow-md"
                       >
-                        Mark as Resolved ✓
+                        <span className="hidden xs:inline">Mark as Resolved</span><span className="xs:hidden">Resolved</span> ✓
                       </button>
                     )}
 

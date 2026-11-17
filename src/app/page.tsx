@@ -118,15 +118,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold">
-            Campus<span className="text-blue-700">Shield</span>
-          </Link>
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-xl font-bold">
+              Campus<span className="text-blue-700">Shield</span>
+            </Link>
+            <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
+              <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              24/7 Helpline Live
+            </span>
+          </div>
           <Link
             href="/security"
             className="text-xs font-semibold text-slate-600 hover:text-blue-700 transition"
           >
-            🛡️ Guard Response Portal →
+            🛡️ <span className="hidden xs:inline">Guard Response Portal</span><span className="xs:hidden">Guard Room</span> →
           </Link>
         </div>
       </header>
@@ -153,7 +159,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="mb-2 block font-medium">Contact Phone Number (10 Digits Required)</label>
+              <label className="mb-2 block font-medium">Contact Phone Number <span className="hidden xs:inline text-xs font-normal text-slate-500">(10 Digits Required)</span></label>
 
               <input
                 type="tel"
