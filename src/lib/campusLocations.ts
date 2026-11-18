@@ -126,6 +126,17 @@ export const FLOOR_OPTIONS: string[] = [
 
 export const LANDMARK_MAX_LENGTH = 80;
 
+export const LANDMARK_SUGGESTIONS: string[] = [
+  "Main entrance",
+  "Reception",
+  "Staircase",
+  "Lift",
+  "Canteen",
+  "Washroom",
+  "Parking",
+  "Playground",
+];
+
 export const DEFAULT_LOCATION: LocationData = {
   zone: "",
   floor: FLOOR_OPTIONS[0],
