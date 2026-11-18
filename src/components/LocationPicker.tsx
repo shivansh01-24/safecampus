@@ -1,11 +1,11 @@
 "use client";
-import { useId } from "react";
+import { useId, useState } from "react";
 import {
   FLOOR_OPTIONS,
   LANDMARK_MAX_LENGTH,
   LANDMARK_SUGGESTIONS,
-  ZONE_GROUPS,
   cleanLocation,
+  filterZoneGroups,
   formatLocation,
   type LocationData,
 } from "@/lib/campusLocations";
@@ -20,6 +20,19 @@ const fieldClass =
 
 export default function LocationPicker({ value, onChange }: LocationPickerProps) {
   const id = useId();
+  const [query, setQuery] = useState("");
+
+  // when the form resets the building (after submit), clear the search text too
+  const [lastZone, setLastZone] = useState(value.zone);
+  if (lastZone !== value.zone) {
+    setLastZone(value.zone);
+    if (value.zone === "") setQuery("");
+  }
+
+  const groups = filterZoneGroups(query);
+  const matchCount = groups.reduce((total, group) => total + group.zones.length, 0);
+  // if the chosen building is filtered out by the search, still show it so the select does not go blank
+  const selectedHidden = value.zone !== "" && !groups.some((g) => g.zones.includes(value.zone));
 
   const update = (changes: Partial<LocationData>) => {
     onChange({ ...value, ...changes });
@@ -44,6 +57,27 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         >
           Campus Building / Area
         </label>
+        <input
+          id={`${id}-search`}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter in the search box should not submit the whole emergency form
+            if (e.key === "Enter") e.preventDefault();
+          }}
+          placeholder="Search building, e.g. library, 34 or hostel"
+          aria-label="Search campus building"
+          aria-describedby={`${id}-search-result`}
+          className={`${fieldClass} mb-2`}
+        />
+        <p id={`${id}-search-result`} aria-live="polite" className="mb-1 text-[11px] text-slate-500">
+          {query.trim()
+            ? matchCount > 0
+              ? `${matchCount} building${matchCount === 1 ? "" : "s"} found`
+              : "No building found, try another word"
+            : ""}
+        </p>
         <select
           id={`${id}-zone`}
           value={value.zone}
@@ -54,7 +88,8 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           <option value="" disabled>
             Select your building
           </option>
-          {ZONE_GROUPS.map((group) => (
+          {selectedHidden && <option value={value.zone}>{value.zone}</option>}
+          {groups.map((group) => (
             <optgroup key={group.label} label={group.label}>
               {group.zones.map((zone) => (
                 <option key={zone} value={zone}>

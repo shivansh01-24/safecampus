@@ -113,6 +113,17 @@ export const ZONE_GROUPS: ZoneGroup[] = [
   },
 ];
 
+// keeps only the blocks that match every word typed in the search box
+// (matches block code or name, ignores upper/lower case). Empty search returns all groups.
+export function filterZoneGroups(query: string): ZoneGroup[] {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return ZONE_GROUPS;
+  return ZONE_GROUPS.map((group) => ({
+    label: group.label,
+    zones: group.zones.filter((zone) => words.every((w) => zone.toLowerCase().includes(w))),
+  })).filter((group) => group.zones.length > 0);
+}
+
 export const FLOOR_OPTIONS: string[] = [
   "Ground Floor",
   "1st Floor",
