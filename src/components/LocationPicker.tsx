@@ -3,6 +3,7 @@ import { useId } from "react";
 import {
   FLOOR_OPTIONS,
   LANDMARK_MAX_LENGTH,
+  LANDMARK_SUGGESTIONS,
   ZONE_GROUPS,
   cleanLocation,
   formatLocation,
@@ -22,6 +23,14 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
 
   const update = (changes: Partial<LocationData>) => {
     onChange({ ...value, ...changes });
+  };
+
+  // adds the suggestion to the landmark text (keeps what the student already typed)
+  const addLandmark = (item: string) => {
+    const current = value.landmark.trim();
+    if (current.toLowerCase().includes(item.toLowerCase())) return;
+    const next = current ? `${current}, ${item}` : item;
+    update({ landmark: next.slice(0, LANDMARK_MAX_LENGTH) });
   };
 
   return (
@@ -98,6 +107,32 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           <p className="mt-1 text-right text-[11px] text-slate-500">
             {value.landmark.length}/{LANDMARK_MAX_LENGTH}
           </p>
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs font-medium text-slate-600">
+          Quick pick (optional)
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {LANDMARK_SUGGESTIONS.map((item) => {
+            const picked = value.landmark.toLowerCase().includes(item.toLowerCase());
+            return (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={picked}
+                onClick={() => addLandmark(item)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                  picked
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-blue-600"
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
         </div>
       </div>
 
